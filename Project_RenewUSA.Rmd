@@ -1,0 +1,141 @@
+---
+title: 'ASM TS Project: RenewUSA'
+author: "Kathryn Weissman & Carol Azparrent"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+rm(list=ls())
+#setwd("~/Documents/ASM/Project")
+```
+
+Total production of renewable energy in USA (trillions of BTU-British Thermal Units)
+
+https://www.eia.gov/totalenergy/data/browser/index.php?tbl=T10.01#/?f=M&start=199001&end=201901&charted=6-7-8-9-14
+
+According to the source data website, this time series is an aggregation of different renewable energy sources including: hydroelectric power, geothermal, solar, wind, and biomass.
+
+Biomass, wind, and solar energy have become more popular starting at different times after 2005 which explains some of the variation in the series.
+
+
+```{r renewUSA}
+series = window(ts(read.table("data/RenewUSA.dat", header=F),start=1990,freq=12))
+series
+```
+
+```{r plotSeries}
+plot(series,main="Total production of renewable energy (USA)", ylab='Trillion Btu')
+abline(v=1990:2020,col=4,lty=3)
+```
+1. Identification
+1.a) Transform into stationary Time Series
+
+## is the variance constant?
+```{r}
+boxplot(series~floor(time(series))) 
+```
+```{r}
+#boxplot for periods of 12 observations = 1 year
+groupedserie <- matrix(series[1:(20*12)], ncol = 20) #boxplot of each year
+boxplot(groupedserie)
+```
+```{r}
+# groupedserie : serie with periods (periods of 12 months = 1 year)
+m<-apply(groupedserie,2,mean)
+v<-apply(groupedserie,2,var)
+plot(v~m)
+abline(lm(v~m),col=2,lty=3) #col: color of line, lty:type of line
+# for mean vs variance (v = s^2) -> there is an increasing
+# ===> THE VARIANCE IS NOT CONSTANT --> we have to take logarithmic
+```
+```{r}
+groupedserie
+```
+
+Variance not constant: change the scale = logarithms
+```{r}
+# now, we apply the logarithmich to "series"
+lnserie=log(series)
+plot(lnserie)
+abline(v=1990:2020,col=4,lty=3)
+abline(h=0)
+```
+
+
+## is there a seasonal pattern?
+
+```{r}
+monthplot(lnserie)
+#there is a seasonal pattern
+```
+```{r}
+ts.plot(matrix(lnserie,nrow=12),col=1:8)
+#most of them are in parallel -> so there is a seasonal pattern
+```
+```{r}
+d12lnserie <- diff(lnserie, lag=12)
+plot(d12lnserie)
+#12 because it's 12 months data in a year
+```
+```{r}
+monthplot(d12lnserie) #no more seasonal pattern
+```
+```{r}
+ts.plot(matrix(d12lnserie,nrow=12),col=1:8)
+#no more seasonal pattern
+```
+now we work with "d12lnserie"
+
+
+## is the mean constant?
+```{r}
+plot(d12lnserie)
+abline(h=0)
+abline(h=mean(d12lnserie),col=2)
+#constant mean = yes
+# this mean in 0? no
+```
+```{r}
+mean(d12lnserie)
+```
+```{r}
+d1d12lnserie = diff(d12lnserie)
+plot(d1d12lnserie)
+abline(h=0)
+abline(h=mean(d1d12lnserie), col=2)
+```
+```{r}
+mean(d1d12lnserie) 
+#mean different from 0  --> differentation
+```
+
+
+```{r}
+var(d12lnserie) #d=0
+var(d1d12lnserie) #d=1 **************
+var(diff(d1d12lnserie)) #d=2
+
+```
+d=1 wins as it has the lower variance. 
+We would take only one differentation.
+W_t = (1-B)(1-B^12)X_t , d=1
+
+we applied first log X_t then, seasonal difference (s=12) as we had seasonal pattern, and finally we added one regular difference.
+
+So now, we work with "d1d12lnserie"
+
+1.b) ACF/PACF
+
+```{r}
+par(mfrow=c(1,2))
+acf(d1d12lnserie,ylim=c(-1,1),lag.max=60,col=c(2,rep(1,11)), main ="ACF(serie)",lwd=2)
+                                  #col: color red and tree blacks: quarter data11
+pacf(d1d12lnserie,ylim=c(-1,1),lag.max=60,col=c(rep(1,11),2), main ="PACF(serie)",lwd=2)
+par(mfrow=c(1,2))              
+
+```
+ACF -> 2 ==> MA(2)
+PACF -> 3 ==> AR(3)
+none of them -> ARMA(1,1)
+
