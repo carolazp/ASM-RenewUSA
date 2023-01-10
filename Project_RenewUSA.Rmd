@@ -32,12 +32,18 @@ abline(v=1990:2020,col=4,lty=3)
 1.a) Transform into stationary Time Series
 
 ## is the variance constant?
+
 ```{r}
-boxplot(series~floor(time(series))) 
+floor(time(series))
+```
+
+
+```{r}
+boxplot(series~floor(time(series)), ylab="Trillion Btu", xlab="Year", main="Boxplots grouped by Year") 
 ```
 ```{r}
 #boxplot for periods of 12 observations = 1 year
-groupedserie <- matrix(series[1:(20*12)], ncol = 20) #boxplot of each year
+groupedserie <- matrix(series[1:(30*12)], ncol = 30) #boxplot of each year
 boxplot(groupedserie)
 ```
 ```{r}
