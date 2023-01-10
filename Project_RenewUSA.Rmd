@@ -25,7 +25,7 @@ series
 ```
 
 ```{r plotSeries}
-plot(series,main="Total production of renewable energy (USA)", ylab='Trillion Btu')
+plot(series,main="Total production of renewable energy (USA)", ylab='Trillion Btu', ylim=c(0,1200))
 abline(v=1990:2020,col=4,lty=3)
 ```
 1. Identification
