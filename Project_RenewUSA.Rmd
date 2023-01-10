@@ -55,7 +55,7 @@ groupedserie
 
 Variance not constant: change the scale = logarithms
 ```{r}
-# now, we apply the logarithmich to "series"
+# now, we apply the logarithmic to "series"
 lnserie=log(series)
 plot(lnserie)
 abline(v=1990:2020,col=4,lty=3)
@@ -73,6 +73,7 @@ monthplot(lnserie)
 ts.plot(matrix(lnserie,nrow=12),col=1:8)
 #most of them are in parallel -> so there is a seasonal pattern
 ```
+so, we take seasonal difference
 ```{r}
 d12lnserie <- diff(lnserie, lag=12)
 plot(d12lnserie)
@@ -83,7 +84,7 @@ monthplot(d12lnserie) #no more seasonal pattern
 ```
 ```{r}
 ts.plot(matrix(d12lnserie,nrow=12),col=1:8)
-#no more seasonal pattern
+#no more seasonal pattern (not in parallel)
 ```
 now we work with "d12lnserie"
 
@@ -99,6 +100,7 @@ abline(h=mean(d12lnserie),col=2)
 ```{r}
 mean(d12lnserie)
 ```
+add regular difference:
 ```{r}
 d1d12lnserie = diff(d12lnserie)
 plot(d1d12lnserie)
@@ -110,7 +112,7 @@ mean(d1d12lnserie)
 #mean different from 0  --> differentation
 ```
 
-
+Comparing the variance to choose the best one:
 ```{r}
 var(d12lnserie) #d=0
 var(d1d12lnserie) #d=1 **************
@@ -124,18 +126,25 @@ W_t = (1-B)(1-B^12)X_t , d=1
 we applied first log X_t then, seasonal difference (s=12) as we had seasonal pattern, and finally we added one regular difference.
 
 So now, we work with "d1d12lnserie"
+we have:
+- seasonal difference
+- one regular difference
 
-1.b) ACF/PACF
 
+
+1.b) ################# ACF/PACF regular & seasonal #####################################
+NEXT PART: Analysis ACF/PACF  W_t ==>> p,q, P,Q
+
+seasonal part: (P,D,Q)_12
+regular part: p,d,q
+ARMA(p,d,q)(P,D,Q)_12
 ```{r}
+# now we work only with d1d12lnserie
 par(mfrow=c(1,2))
-acf(d1d12lnserie,ylim=c(-1,1),lag.max=60,col=c(2,rep(1,11)), main ="ACF(serie)",lwd=2)
-                                  #col: color red and tree blacks: quarter data11
-pacf(d1d12lnserie,ylim=c(-1,1),lag.max=60,col=c(rep(1,11),2), main ="PACF(serie)",lwd=2)
-par(mfrow=c(1,2))              
+acf(d1d12lnserie, ylim=c(-1,1), lag.max = 72,col=c(2,rep(1,11)),lwd=2)
+pacf(d1d12lnserie, ylim=c(-1,1), lag.max = 72,col=c(rep(1,11),2),lwd=2)
+par(mfrow=c(1,1))
 
+#SEASONAL: red lines
+#REGULAR: black lines
 ```
-ACF -> 2 ==> MA(2)
-PACF -> 3 ==> AR(3)
-none of them -> ARMA(1,1)
-
