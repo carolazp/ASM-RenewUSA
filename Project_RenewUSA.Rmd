@@ -491,6 +491,8 @@ series
 
 ## outlier treatment
 ```{r}
+source("atipics2.r")
+
 ##Detection of outliers: In this case, we have applied a regular and a seasonal differentiation of order $S=12$. We set the criterion to $crit = 2.8$ and also the argument LS to TRUE.
 ## The crit value chosen by the researcher is typically fixed around 3; the LS argument is optional (= TRUE if one aims to detect a level shift)
 
