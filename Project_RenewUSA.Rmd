@@ -419,18 +419,63 @@ Model 1 is stable.
 
 
 ```{r}
-# Based on Model 1
-ultim=c(2018,12) # ending one year before the end of the time series: 12 observations
+# # Based on Model 1
+# ultim=c(2018,12) # ending one year before the end of the time series: 12 observations
 
 # Model 1 Parameters
-pdq=c(0,1,2)
-PDQ=c(0,1,1)
+# pdq=c(0,1,2)
+# PDQ=c(0,1,1)
 
-serie2=window(series,end=ultim)
-lnserie2=log(serie2)
-serie1=window(series,end=ultim+c(1,0)) # adds one year
-lnserie1=log(serie1)
+# serie2=window(series,end=ultim)
+# lnserie2=log(serie2)
+# serie1=window(series,end=ultim+c(1,0)) # adds one year
+# lnserie1=log(serie1)
 
-(modC=arima(lnserie1,order=pdq,seasonal=list(order=PDQ,period=12))) # whole time series
-(modD=arima(lnserie2,order=pdq,seasonal=list(order=PDQ,period=12))) # model without last observations
+# (modC=arima(lnserie1,order=pdq,seasonal=list(order=PDQ,period=12))) # whole time series
+# (modD=arima(lnserie2,order=pdq,seasonal=list(order=PDQ,period=12))) # model without last observations
 ```
+
+
+## Prediction: 
+```{r}
+pred=predict(modB,n.ahead=12)
+pr<-ts(c(tail(lnserie2,1),pred$pred),start=ultim,freq=12)
+se<-ts(c(0,pred$se),start=ultim,freq=12)
+
+#Intervals
+tl<-ts(exp(pr-1.96*se),start=ultim,freq=12)
+tu<-ts(exp(pr+1.96*se),start=ultim,freq=12)
+pr<-ts(exp(pr),start=ultim,freq=12)
+
+
+ts.plot(series,tl,tu,pr,lty=c(1,2,2,1),col=c(1,4,4,2),xlim=ultim[1]+c(-2,+2),type="o",main=paste("Model ARIMA(",paste(pdq,collapse=","),")(",paste(PDQ,collapse=","),")12",sep=""))
+abline(v=(ultim[1]-2):(ultim[1]+2),lty=3,col=4)
+```
+
+
+```{r}
+obs=window(series,start=ultim+c(0,1))
+pr=window(pr,start=ultim+c(0,1))
+ts(data.frame(LowLim=tl[-1],Predic=pr,UpperLim=tu[-1],Observ=obs,Error=obs-pr,PercentError=(obs-pr)/obs),start=ultim+c(0,1),freq=12)
+```
+
+```{r}
+mod.RMSE1=sqrt(sum((obs-pr)^2)/12)
+mod.MAE1=sum(abs(obs-pr))/12
+mod.RMSPE1=sqrt(sum(((obs-pr)/obs)^2)/12)
+mod.MAPE1=sum(abs(obs-pr)/obs)/12
+
+data.frame("RMSE"=mod.RMSE1,"MAE"=mod.MAE1,"RMSPE"=mod.RMSPE1,"MAPE"=mod.MAPE1)
+```
+
+
+```{r}
+mCI1=mean(tu-tl)
+
+cat("\nMean Length CI: ",mCI1)
+```
+```{r}
+series
+```
+
+
