@@ -502,5 +502,23 @@ mod.atip=outdetec(modA,dif=c(1,12),crit=2.8,LS=T) # automatic detection of outli
 mod.atip$sigma
 ```
 
+```{r}
+atipics=mod.atip$atip[order(mod.atip$atip[,1]),]
+meses=c("Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic")
 
+data.frame(atipics,Fecha=paste(meses[(atipics[,1]-1)%%12+1],start(lnserie)[1]+((atipics[,1]-1)%/%12)),perc.Obs=exp(atipics[,3])*100)
+```
+These are the outliers.
 
+```{r}
+lnserie.lin=lineal(lnserie,mod.atip$atip)
+
+serie.lin=exp(lnserie.lin)
+
+plot(serie.lin,col=2)
+lines(series)
+```
+
+```{r}
+plot(lnserie-lnserie.lin)
+```
