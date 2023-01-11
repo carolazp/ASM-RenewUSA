@@ -301,8 +301,8 @@ validation=function(model){
   
   #ACF & PACF of residuals
   par(mfrow=c(1,2))
-  acf(resid,ylim=c(-1,1),lag.max=60,col=c(2,rep(1,s-1)),lwd=1)
-  pacf(resid,ylim=c(-1,1),lag.max=60,col=c(rep(1,s-1),2),lwd=1)
+  acf(resid,ylim=c(-1,1),lag.max=60,col=c(2,rep(1,s-1)),lwd=1, main='ACF residuals')
+  pacf(resid,ylim=c(-1,1),lag.max=60,col=c(rep(1,s-1),2),lwd=1, main='PACF residuals')
   par(mfrow=c(1,1))
   
   #Ljung-Box p-values
@@ -380,4 +380,57 @@ validation=function(model){
 ################# Fi Validation #################################
 ```
 
+```{r}
+validation(mod1)
+```
+```{r}
+validation(mod2)
+```
 
+We want to check for stability here.
+
+The magnitude, sign, and significance of the coefficients for both models A and B are similar.
+
+model B is based on the training data set.
+model A is based on the whole data set.
+
+Model 2 is Stable.
+
+```{r}
+# Based on Model 2
+ultim=c(2018,12) # ending one year before the end of the time series: 12 observations
+
+# Model 2 Parameters
+pdq=c(0,1,2)
+PDQ=c(0,1,2)
+
+serie2=window(series,end=ultim)
+lnserie2=log(serie2)
+serie1=window(series,end=ultim+c(1,0)) # adds one year
+lnserie1=log(serie1)
+
+(modA=arima(lnserie1,order=pdq,seasonal=list(order=PDQ,period=12))) # whole time series
+(modB=arima(lnserie2,order=pdq,seasonal=list(order=PDQ,period=12))) # model without last observations
+```
+model D is based on the training data set.
+model C is based on the whole data set.
+
+Model 1 is stable.
+
+
+```{r}
+# Based on Model 1
+ultim=c(2018,12) # ending one year before the end of the time series: 12 observations
+
+# Model 1 Parameters
+pdq=c(0,1,2)
+PDQ=c(0,1,1)
+
+serie2=window(series,end=ultim)
+lnserie2=log(serie2)
+serie1=window(series,end=ultim+c(1,0)) # adds one year
+lnserie1=log(serie1)
+
+(modC=arima(lnserie1,order=pdq,seasonal=list(order=PDQ,period=12))) # whole time series
+(modD=arima(lnserie2,order=pdq,seasonal=list(order=PDQ,period=12))) # model without last observations
+```
