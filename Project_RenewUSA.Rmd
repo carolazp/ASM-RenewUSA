@@ -413,10 +413,12 @@ ultim=c(2018,12) # ending one year before the end of the time series: 12 observa
 pdq=c(0,1,2)
 PDQ=c(0,1,2)
 
-serie2=window(series,end=ultim)
-lnserie2=log(serie2)
 serie1=window(series,end=ultim+c(1,0)) # adds one year
 lnserie1=log(serie1)
+
+serie2=window(series,end=ultim)
+lnserie2=log(serie2)
+
 
 (modA=arima(lnserie1,order=pdq,seasonal=list(order=PDQ,period=12))) # whole time series
 (modB=arima(lnserie2,order=pdq,seasonal=list(order=PDQ,period=12))) # model without last observations
@@ -461,7 +463,6 @@ ts.plot(series,tl,tu,pr,lty=c(1,2,2,1),col=c(1,4,4,2),xlim=ultim[1]+c(-2,+2),typ
 abline(v=(ultim[1]-2):(ultim[1]+2),lty=3,col=4)
 ```
 
-
 ```{r}
 obs=window(series,start=ultim+c(0,1))
 pr=window(pr,start=ultim+c(0,1))
@@ -486,5 +487,18 @@ cat("\nMean Length CI: ",mCI1)
 ```{r}
 series
 ```
+
+
+## outlier treatment
+```{r}
+##Detection of outliers: In this case, we have applied a regular and a seasonal differentiation of order $S=12$. We set the criterion to $crit = 2.8$ and also the argument LS to TRUE.
+## The crit value chosen by the researcher is typically fixed around 3; the LS argument is optional (= TRUE if one aims to detect a level shift)
+
+mod.atip=outdetec(modA,dif=c(1,12),crit=2.8,LS=T) # automatic detection of outliers with crit=2.8 and LS =TRUE
+
+#Estimated residual variance after outliers detection and treatment
+mod.atip$sigma
+```
+
 
 
