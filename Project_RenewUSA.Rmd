@@ -97,7 +97,7 @@ now we work with "d12lnserie"
 
 ## is the mean constant?
 ```{r}
-plot(d12lnserie)
+plot(d12lnserie, ylab='d12lnserie', main='Renewable Energy Production (log, s=12)')
 abline(h=0)
 abline(h=mean(d12lnserie),col=2)
 #constant mean = yes
@@ -109,7 +109,7 @@ mean(d12lnserie)
 add regular difference:
 ```{r}
 d1d12lnserie = diff(d12lnserie)
-plot(d1d12lnserie)
+plot(d1d12lnserie, ylab='d1d12lnserie', main='Renewable Energy Production (log, s=12, d=1)')
 abline(h=0)
 abline(h=mean(d1d12lnserie), col=2)
 ```
@@ -155,10 +155,14 @@ par(mfrow=c(1,1))
 ```
 # SEASONAL: red lines
   MA(1)_12
+  MA(2)_12 - possibly
   AR(4)_12
+  ARMA(1,1)_12 - possibly
   
 # REGULAR: black lines
   MA(2)
+  AR(3)
+  ARMA(1,1)
   
 reminder: we work with "d1d12lnserie"
 d = 1
@@ -224,8 +228,12 @@ almost all lags are inside the band. ok
 The AIC:
 mod1: ARIMA(0,1,2)(0,1,1)_12   ==> -1230.79
 mod2: ARIMA(0,1,2)(4,1,0)_12   ==> -1213.08
+mod3: ARIMA(0,1,2)(1,1,1)_12   ==> -1235.35
+mod4: ARIMA(1,1,1)(1,1,1)_12   ==> -1231.47
+mod5: ARIMA(1,1,1)(0,1,1)_12   ==> -1226.75
+mod6: ARIMA(0,1,2)(0,1,2)_12   ==> -1235.66
 
-the mod1 has the lowest AIC: this is the best model for us.
+mod3 and mod6 have the lowest AIC.
 
 
 EXTRA MODEL:
@@ -247,10 +255,43 @@ par(mfrow=c(1,1))
 ```
 almost all lags are inside the band. ok
 
+```{r}
+par(mfrow=c(1,1))
+tsdiag(mod3,gof=72)
+```
 
+```{r}
+# ARIMA(p,d,q)(P,D,Q)_S
+# ARIMA(1,1,1)(1,1,1)_12
+(mod4 <- arima(lnserie, order=c(1,1,1), seasonal=list(order=c(1,1,1),period = 12)))
+                  #REGULAR PART:ARMA(1,1)     #SEASONAL PART:ARMA(1,1)_12     #PERIOD FOR THE SEASONAL PART       
+```
 
+```{r}
+# ARIMA(p,d,q)(P,D,Q)_S
+# ARIMA(1,1,1)(0,1,1)_12
+(mod5 <- arima(lnserie, order=c(1,1,1), seasonal=list(order=c(0,1,1),period = 12)))
+                  #REGULAR PART:ARMA(1,1)     #SEASONAL PART:MA(1)_12     #PERIOD FOR THE SEASONAL PART       
+```
 
+```{r}
+# ARIMA(0,1,2)(0,1,2)_12
+(mod6 <- arima(lnserie, order=c(0,1,2), seasonal=list(order=c(0,1,2),period = 12)))
+                  #REGULAR PART:MA(2)     #SEASONAL PART:MA(2)_12     #PERIOD FOR THE SEASONAL PART       
+```
+```{r}
+# checking the residuals for model 6
+# we need all the flags lying inside the band: Z_t ~ WN(0, (SIGMA_z)^2 )
+par(mfrow=c(1,2))
+acf(resid(mod6), ylim=c(-1,1), lag.max = 72,col=c(2,rep(1,11)),lwd=2)
+pacf(resid(mod6), ylim=c(-1,1), lag.max = 72,col=c(rep(1,11),2),lwd=2)
+par(mfrow=c(1,1))
+```
 
+```{r}
+par(mfrow=c(1,1))
+tsdiag(mod6,gof=72)
+```
 
 ```{r}
 #################Validation#################################
